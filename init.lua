@@ -15,15 +15,16 @@ vim.opt.relativenumber = true
 vim.opt.termguicolors = true
 
 vim.pack.add({
-	{ src = "https://github.com/rose-pine/neovim",              name = "rose-pine" },
+	{ src = "https://github.com/rose-pine/neovim",               name = "rose-pine" },
 	{ src = "https://github.com/neovim/nvim-lspconfig" },
 	{ src = "https://github.com/yamazhen/mason-conform" },
 	{ src = "https://github.com/williamboman/mason.nvim" },
 	{ src = "https://github.com/mason-org/mason-lspconfig.nvim" },
 	{ src = "https://github.com/nvim-mini/mini.nvim" },
-	{ src = "https://github.com/Saghen/blink.cmp",              version = vim.version.range("1") },
+	{ src = "https://github.com/Saghen/blink.cmp",               version = vim.version.range("1") },
 	{ src = "https://github.com/stevearc/conform.nvim" },
 	{ src = "https://github.com/tpope/vim-fugitive" },
+	{ src = "https://github.com/nvim-treesitter/nvim-treesitter" },
 })
 
 require("vim._core.ui2").enable()
@@ -37,6 +38,14 @@ require("blink.cmp").setup()
 require("rose-pine").setup({ styles = { transparency = true, italic = false } })
 
 vim.cmd.colorscheme("rose-pine-moon")
+
+vim.api.nvim_create_autocmd("FileType", {
+	callback = function(e)
+		local lang = vim.treesitter.language.get_lang(e.match) or e.match
+		if not require("nvim-treesitter.parsers")[lang] then return end
+		require("nvim-treesitter").install(lang):await(function() pcall(vim.treesitter.start, e.buf, lang) end)
+	end
+})
 
 vim.keymap.set("n", "<leader>g", "<cmd>Git<CR>")
 vim.keymap.set("n", "<leader>ee", "<cmd>lua MiniFiles.open()<CR>")
